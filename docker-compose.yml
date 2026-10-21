@@ -1,0 +1,258 @@
+services:
+  config:
+    build: ./config-server # Usa el Dockerfile
+    container_name: config
+    ports:
+      - "8888:8888"
+    environment:
+      "spring.profiles.active": "default"
+      "spring.cloud.config.server.git.uri": "https://github.com/AngelGarMar/tickets-config-data.git"
+      "spring.cloud.config.server.git.username": "AngelGarMar"
+      "spring.cloud.config.server.git.password": "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"
+      "spring.cloud.config.server.git.clone-on-start": "true"
+      "spring.cloud.config.server.git.default-label": "main"
+    networks:
+      - tickets
+  usuariosbd:
+    image: mysql:8.0
+    container_name: usuariosbd
+    environment:
+      MYSQL_ROOT_PASSWORD: users
+      MYSQL_DATABASE: tickets_usuarios
+    ports:
+      - "3307:3306"
+    volumes:
+      - datausuarios:/var/lib/mysql
+    restart: always
+    networks:
+      - tickets
+  clientesbd:
+    image: mysql:8.0
+    container_name: clientesbd
+    environment:
+      MYSQL_ROOT_PASSWORD: clients
+      MYSQL_DATABASE: tickets_clientes
+    ports:
+      - "3308:3306"
+    volumes:
+      - dataclientes:/var/lib/mysql
+    restart: always
+    networks:
+      - tickets
+  viajesbd:
+    image: mysql:8.0
+    container_name: viajesbd
+    environment:
+      MYSQL_ROOT_PASSWORD: travels
+      MYSQL_DATABASE: tickets_viajes
+    ports:
+      - "3309:3306"
+    volumes:
+      - dataviajes:/var/lib/mysql
+    restart: always
+    networks:
+      - tickets
+  paraderosbd:
+    image: mysql:8.0
+    container_name: paraderosbd
+    environment:
+      MYSQL_ROOT_PASSWORD: points
+      MYSQL_DATABASE: tickets_paraderos
+    ports:
+      - "3310:3306"
+    volumes:
+      - dataparaderos:/var/lib/mysql
+    restart: always
+    networks:
+      - tickets
+  conductoresbd:
+    image: mysql:8.0
+    container_name: conductoresbd
+    environment:
+      MYSQL_ROOT_PASSWORD: drivers
+      MYSQL_DATABASE: tickets_conductores
+    ports:
+      - "3311:3306"
+    volumes:
+      - dataconductores:/var/lib/mysql
+    restart: always
+    networks:
+      - tickets
+  pagosbd:
+    image: mysql:8.0
+    container_name: pagosbd
+    environment:
+      MYSQL_ROOT_PASSWORD: pays
+      MYSQL_DATABASE: tickets_pagos
+    ports:
+      - "3312:3306"
+    volumes:
+      - datapagos:/var/lib/mysql
+    restart: always
+    networks:
+      - tickets
+  discovery:
+    container_name: discovery
+    #build: ./discovery # Usa el Dockerfile
+    build:
+      context: ./discovery
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    environment:
+      "register-with-eureka": "false"
+      "fetch-registry": "false"
+      "eureka.client.service-url.defaultZone": "http://discovery:8761/eureka/"
+    networks:
+      - tickets
+  gateway:
+    container_name: gateway
+    build: ./gateway # Usa el Dockerfile
+    ports:
+      - "9000:9000"
+    environment:
+      "eureka.client.service-url.defaultZone": "http://discovery:8761/eureka/"
+      "spring.cloud.config.uri": "http://config:8888"
+    networks:
+      - tickets
+    depends_on:
+      - config
+      - discovery
+      - usuariosbd
+    restart: always
+  usuarios:
+    build: ./usuarios # Usa el Dockerfile
+    ports:
+        - "0:8080"
+    environment:
+      "eureka.client.service-url.defaultZone": "http://discovery:8761/eureka/"
+      "spring.cloud.config.uri": "http://config:8888"
+    networks:
+      - tickets
+    depends_on:
+      - config
+      - usuariosbd
+    restart: always
+    #deploy:
+      #replicas: 2
+  clientes:
+    container_name: clientes
+    build: ./clientes # Usa el Dockerfile
+    ports:
+      - "0:8080"
+    environment:
+      "eureka.client.service-url.defaultZone": "http://discovery:8761/eureka/"
+      "spring.cloud.config.uri": "http://config:8888"
+    networks:
+      - tickets
+    depends_on:
+      - config
+      - discovery
+      - clientesbd
+    restart: always
+    #deploy:
+      #replicas: 2
+  viajes:
+    container_name: viajes
+    build: ./viajes # Usa el Dockerfile
+    ports:
+      - "0:8080"
+    environment:
+      "eureka.client.service-url.defaultZone": "http://discovery:8761/eureka/"
+      "spring.cloud.config.uri": "http://config:8888"
+    networks:
+      - tickets
+    depends_on:
+      - config
+      - discovery
+      - viajesbd
+      - rabbitmq
+    restart: always
+    #deploy:
+      #replicas: 2
+  paraderos:
+    container_name: paraderos
+    build: ./paraderos # Usa el Dockerfile
+    ports:
+      - "0:8080"
+    environment:
+      "eureka.client.service-url.defaultZone": "http://discovery:8761/eureka/"
+      "spring.cloud.config.uri": "http://config:8888"
+    networks:
+      - tickets
+    depends_on:
+      - config
+      - discovery
+      - paraderosbd
+    restart: always
+    #deploy:
+      #replicas: 2
+  conductores:
+    container_name: conductores
+    build: ./conductores # Usa el Dockerfile
+    ports:
+      - "0:8080"
+    environment:
+      "eureka.client.service-url.defaultZone": "http://discovery:8761/eureka/"
+      "spring.cloud.config.uri": "http://config:8888"
+    networks:
+      - tickets
+    depends_on:
+      - config
+      - discovery
+      - conductoresbd
+      - rabbitmq
+    restart: always
+    #deploy:
+      #replicas: 2
+  pagos:
+    container_name: pagos
+    build: ./pagos # Usa el Dockerfile
+    ports:
+      - "0:8080"
+    environment:
+      "eureka.client.service-url.defaultZone": "http://discovery:8761/eureka/"
+      "spring.cloud.config.uri": "http://config:8888"
+    networks:
+      - tickets
+    depends_on:
+      - config
+      - discovery
+      - pagosbd
+      - rabbitmq
+    restart: always
+    #deploy:
+      #replicas: 2
+  rabbitmq:
+    image: rabbitmq:4.3.6-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672" # Puerto para comunicación entre microservicios
+      - "15672:15672" # Puerto para la consola de gestión web
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - tickets
+volumes:
+  datausuarios:
+    name: datausuarios
+  dataclientes:
+    name: dataclientes
+  dataviajes:
+    name: dataviajes
+  dataparaderos:
+    name: dataparaderos
+  dataconductores:
+    name: dataconductores
+  datapagos:
+    name: datapagos
+  rabbitmq_data:
+    name: rabbitmq_data
+
+networks:
+  tickets:
+    name: tickets
+    driver: bridge

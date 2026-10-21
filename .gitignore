@@ -1,0 +1,15 @@
+# Asegurar que no se suban carpetas de compilación comunes de Spring Boot (por si acaso)
+**/target/
+**/.build/
+
+# Si quieres ignorar carpetas específicas por su nombre en lugar de todas
+clientes/
+conductores/
+config-data/
+config-server/
+discovery/
+gateway/
+pagos/
+paraderos/
+usuarios/
+viajes/
