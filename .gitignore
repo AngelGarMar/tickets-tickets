@@ -13,6 +13,7 @@ pagos/
 paraderos/
 usuarios/
 viajes/
+.env
 
 HELP.md
 target/

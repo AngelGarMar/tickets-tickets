@@ -7,8 +7,8 @@ services:
     environment:
       "spring.profiles.active": "default"
       "spring.cloud.config.server.git.uri": "https://github.com/AngelGarMar/tickets-config-data.git"
-      "spring.cloud.config.server.git.username": "AngelGarMar"
-      "spring.cloud.config.server.git.password": "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"
+      "spring.cloud.config.server.git.username": "${USER_GITHUB}"
+      "spring.cloud.config.server.git.password": "${PASS_GITHUB}"
       "spring.cloud.config.server.git.clone-on-start": "true"
       "spring.cloud.config.server.git.default-label": "main"
     networks:
@@ -119,6 +119,7 @@ services:
       - config
       - discovery
       - usuariosbd
+      - grafana-lgtm
     restart: always
   usuarios:
     build: ./usuarios # Usa el Dockerfile
