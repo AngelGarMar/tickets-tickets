@@ -122,6 +122,7 @@ services:
       - grafana-lgtm
     restart: always
   usuarios:
+    container_name: usuarios
     build: ./usuarios # Usa el Dockerfile
     ports:
         - "0:8080"
@@ -238,13 +239,16 @@ services:
     networks:
       - tickets
   grafana-lgtm:
-    image: 'grafana/otel-lgtm:latest'
+    image: grafana/otel-lgtm:latest
+    container_name: grafana
     ports:
-      - '3000:3000' # interfaz de grafana, navegador
-      - '4317:4317' # grpc
-      - '4318:4318' # http
+      - "3000:3000" # interfaz de grafana, navegador
+      - "4317:4317" # grpc
+      - "4318:4318" # http
     environment:
       - OTEL_METRIC_EXPORT_INTERVAL=5000 # se envían a grafana cada 5 segundos
+    networks:
+      - tickets
 volumes:
   datausuarios:
     name: datausuarios
